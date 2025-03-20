@@ -4,15 +4,15 @@
   import backgroundDataURL from "$lib/data/truncated_backgrounds.dat?url";
 
   import ROM from "$lib/rom/ROM";
-  import Engine from "$lib/engine";
   import BackgroundLayer from "$lib/rom/BackgroundLayer";
-  import { DEFAULT_FPS as fps } from "$lib/constants";
+  import Engine from "$lib/Engine";
 
+  import { DEFAULT_FPS as fps } from "$lib/constants";
 
   let { data }: PageProps = $props();
   const { layer1, layer2, aspectRatio, frameSkip } = $derived(data.config);
 
-  let canvas: HTMLCanvasElement;
+  let container: HTMLDivElement;
   let rom: ROM | null = $state(null);
   let engine: Engine | null = $state(null);
 
@@ -38,29 +38,42 @@
         aspectRatio,
         frameSkip,
         alpha: [alpha, alpha],
-        canvas,
+        containerElement: container,
+        // initialShader: "zfast-crt",
+        initialShader: "none",
+        renderScale: 4,
+        preRenderFrames: 0,
       },
     );
+
     engine.animate();
+
+    // return () => {
+    //   if (engine) {
+    //     engine.animate()(); // Call the cleanup function
+    //   }
+    // };
   });
 </script>
 
-<canvas
-  class="p-0 m-0 h-auto absolute top-1/2 left-1/2 -translate-1/2 backface-hidden main-canvas"
-  bind:this={canvas}
-></canvas>
+<div class="crt-container" bind:this={container}></div>
 
 <style>
-  :global(html) {
+  :global(html, body) {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     background-color: black;
+    width: 100%;
+    height: 100%;
   }
 
-  .main-canvas {
-    /* width: 99.2%; */
+  .crt-container {
     width: 100%;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    image-rendering: -moz-crisp-edges;
-    -webkit-backface-visibility: hidden;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

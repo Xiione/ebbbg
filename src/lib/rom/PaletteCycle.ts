@@ -40,12 +40,15 @@ export default class PaletteCycle {
       }
     }
   }
+
   getEffect() {
     return this.type;
   }
+
   getColors(subPalette: number) {
     return this.nowColors[subPalette];
   }
+
   cycle() {
     if (this.speed === 0) {
       return false;
@@ -59,6 +62,7 @@ export default class PaletteCycle {
     }
     return false;
   }
+
   cycleColors() {
     if (this.type === 1 || this.type === 2) {
       const cycleLength = this.end1 - this.start1 + 1;
@@ -78,6 +82,7 @@ export default class PaletteCycle {
         }
       }
     }
+
     if (this.type === 2) {
       const cycleLength = this.end2 - this.start2 + 1;
       const cycle2Position = this.cycleCount % cycleLength;

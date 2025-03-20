@@ -17,3 +17,11 @@ export interface BackgroundConfig {
   aspectRatio: AspectRatio;
   frameSkip: number;
 }
+export type ShaderType = 
+  | 'crt-blurpi' | 'crt-caligari' | 'crt-easymode' | 'crt-frutbunn'
+  | 'crt-geom' | 'crtglow' | 'crt-guest' | 'crt-hyllian' | 'crt-lottes'
+  | 'crt-mattias' | 'crt-nes-mini' | 'crt-pi' | 'crt-potato' | 'crt-royale'
+  | 'crtsim' | 'crt-slangtest' | 'crt-torridgristle' | 'crt-yo6-kv-m14208b'
+  | 'dotmask' | 'GritsScanlines' | 'gtu' | 'mame-hlsl' | 'meta-crt'
+  | 'vector-glow' | 'vt220' | 'yeetron' | 'zfast-crt' | 'none';
+
