@@ -40,8 +40,10 @@ export const load: PageLoad = ({ url }) => {
   };
 
   const config: BackgroundConfig = {
-    layer1: parseLayerParam("layer1", layer1Default),
-    layer2: parseLayerParam("layer2", layer2Default),
+    // layer1: parseLayerParam("layer1", layer1Default),
+    // layer2: parseLayerParam("layer2", layer2Default),
+    layer1: parseLayerParam("layer1", Math.floor(Math.random() * (MAX_LAYER_INDEX+1))),
+    layer2: parseLayerParam("layer2", Math.floor(Math.random() * (MAX_LAYER_INDEX+1))),
     aspectRatio: parseAspectRatio(),
     frameSkip: parseFrameSkip(),
   };

@@ -9,15 +9,16 @@
     any later version.
 */
 uniform sampler2D tDiffuse;
+uniform vec2 resolution;
+uniform vec2 sourceResolution;
+uniform float pixelSize;
+
 uniform float BLURSCALEX;
 uniform float LOWLUMSCAN;
 uniform float HILUMSCAN;
 uniform float BRIGHTBOOST;
 uniform float MASK_DARK;
 uniform float MASK_FADE;
-uniform vec2 resolution;
-uniform vec2 sourceResolution;
-uniform float pixelSize;
 
 varying vec2 vUv;
 varying float maskFade;

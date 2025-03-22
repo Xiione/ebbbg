@@ -105,8 +105,10 @@ export default class Engine {
       SNES_HEIGHT,
       THREE.RGBAFormat,
     );
-    this.pixelTexture.minFilter = THREE.LinearFilter;
-    this.pixelTexture.magFilter = THREE.LinearFilter;
+    // this.pixelTexture.minFilter = THREE.LinearFilter;
+    // this.pixelTexture.magFilter = THREE.LinearFilter;
+    this.pixelTexture.minFilter = THREE.NearestFilter;
+    this.pixelTexture.magFilter = THREE.NearestFilter;
     this.pixelTexture.colorSpace = THREE.SRGBColorSpace;
     this.pixelTexture.generateMipmaps = false;
     this.pixelTexture.needsUpdate = true;

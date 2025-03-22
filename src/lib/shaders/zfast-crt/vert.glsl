@@ -11,8 +11,8 @@
 varying vec2 vUv;
 varying float maskFade;
 varying vec2 invDims;
-uniform vec2 resolution;
 uniform vec2 sourceResolution;
+uniform vec2 resolution;
 uniform float MASK_FADE;
 
 void main() {

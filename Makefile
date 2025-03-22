@@ -1,2 +1,2 @@
 run:
-	pnpm run dev
+	./dev.fish
