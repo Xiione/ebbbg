@@ -39,9 +39,9 @@
         frameSkip,
         alpha: [alpha, alpha],
         containerElement: container,
-        // initialShader: "zfast-crt",
-        initialShader: "none",
-        renderScale: 4,
+        initialShader: "zfast-crt",
+        // initialShader: "none",
+        renderScale: 8,
         preRenderFrames: 0,
       },
     );
