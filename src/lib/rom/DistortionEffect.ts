@@ -6,6 +6,11 @@ export enum EffectType {
   VERTICAL = 3,
 }
 
+function toSignedShort(x: number) {
+  // return x << 16 >> 16
+  return x;
+}
+
 export default class DistortionEffect {
   private data = new Uint8Array(17);
 
@@ -27,6 +32,7 @@ export default class DistortionEffect {
   //   }
 
   static sanitize(type: number) {
+    // sometimes it's 4...
     switch (type) {
       case EffectType.HORIZONTAL:
         return EffectType.HORIZONTAL;
@@ -44,7 +50,7 @@ export default class DistortionEffect {
 
   set type(value) {
     // this.data[2] = DistortionEffect.sanitize(this.data[2]);
-    this.data[2] = DistortionEffect.sanitize(value);
+    this.data[2] = value;
   }
 
   //   get duration() {
@@ -57,16 +63,16 @@ export default class DistortionEffect {
   //   }
 
   get frequency() {
-    return this.data[3] + (this.data[4] << 8);
+    return toSignedShort(this.data[3] + (this.data[4] << 8));
   }
 
   set frequency(value) {
     this.data[3] = value;
     this.data[4] = value >> 8;
   }
-  
+
   get amplitude() {
-    return this.data[5] + (this.data[6] << 8);
+    return toSignedShort(this.data[5] + (this.data[6] << 8));
   }
 
   set amplitude(value) {
@@ -75,7 +81,7 @@ export default class DistortionEffect {
   }
 
   get compression() {
-    return this.data[8] + (this.data[9] << 8);
+    return toSignedShort(this.data[8] + (this.data[9] << 8));
   }
 
   set compression(value) {
@@ -84,7 +90,7 @@ export default class DistortionEffect {
   }
 
   get frequencyAcceleration() {
-    return this.data[10] + (this.data[11] << 8);
+    return toSignedShort(this.data[10] + (this.data[11] << 8));
   }
 
   set frequencyAcceleration(value) {
@@ -93,7 +99,7 @@ export default class DistortionEffect {
   }
 
   get amplitudeAcceleration() {
-    return this.data[12] + (this.data[13] << 8);
+    return toSignedShort(this.data[12] + (this.data[13] << 8));
   }
 
   set amplitudeAcceleration(value) {
@@ -102,7 +108,7 @@ export default class DistortionEffect {
   }
 
   get speed() {
-    return this.data[14];
+    return toSignedShort(this.data[14]);
   }
 
   set speed(value) {
@@ -110,7 +116,7 @@ export default class DistortionEffect {
   }
 
   get compressionAcceleration() {
-    return this.data[15] + (this.data[16] << 8);
+    return toSignedShort(this.data[15] + (this.data[16] << 8));
   }
 
   set compressionAcceleration(value) {

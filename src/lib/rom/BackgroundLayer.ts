@@ -29,6 +29,22 @@ export default class BackgroundLayer {
     const animation = background.animation;
     const e1 = (animation >> 24) & 0xff;
     const e2 = (animation >> 16) & 0xff;
+    const e3 = (animation >> 8) & 0xff;
+    const e4 = animation & 0xff;
+
+    /** 
+     * e3, e4 always seem to be 0
+     * e1 > 3, e2 = 0: 41
+     * e2 = e1 + 1: 43, 110, 86
+     * the latter kind suffer from the infinite compression issue, and ingame
+     * they all reverse the compression at some point, maybe according to the 
+     * unused "duration" DistortionEffect field 
+     * https://youtu.be/0oTzJwnvu-M?t=285
+     * 
+     * some have a translation effect applied, independent of whether e1 > 3 or not
+     * need to investigate this
+     */
+    console.log(e1, e2, e3, e4)
 
     this.distorter = new Distorter(
       new DistortionEffect(this.rom, e2 || e1),

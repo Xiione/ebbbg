@@ -125,11 +125,9 @@ export default class Distorter {
       to use becomes easy; simply mod the tick count by the total duration
       of the effects that are used in the sequence, then check the remainder
       against the cumulative durations of each effect.
-      I guess the trick is to be sure that my description above is correct.
-      Heh.
     */
 
-    const {
+    let {
       amplitude,
       amplitudeAcceleration,
       compression,
@@ -141,6 +139,7 @@ export default class Distorter {
 
     const t2 = ticks * 2;
 
+    // console.log("accel:", amplitudeAcceleration, amplitude, compression, compressionAcceleration, frequency, frequencyAcceleration)
     const amplitudeCur = C1 * (amplitude + amplitudeAcceleration * t2);
     const compressionCur =
       1 + (compression + compressionAcceleration * t2) / 256;
