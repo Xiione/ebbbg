@@ -3,10 +3,12 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-import type { ShaderType } from "./types";
+import type { ShaderPreset, ShaderType } from "./types";
 
 import type BackgroundLayer from "$lib/rom/BackgroundLayer";
 import { SNES_WIDTH, SNES_HEIGHT } from "$lib/constants";
+
+const SHADER_DIR = "shaders";
 
 export interface EngineOptions {
   fps: number;
@@ -37,7 +39,6 @@ export default class Engine {
   private composer!: EffectComposer;
   private pixelData!: Uint8Array;
   private pixelTexture!: THREE.DataTexture;
-  private shaderPass: ShaderPass | null = null;
 
   // Animation frames storage
   private preRenderedFrames: Uint8Array[] = [];
@@ -47,8 +48,8 @@ export default class Engine {
   private isAnimationLooping: boolean = false;
 
   // Shader management
-  private currentShader: ShaderType = "none";
-  private shaderLoaded: boolean = false;
+  private shaderLoading: Promise<any> = Promise.resolve();
+  private shaderPasses: ShaderPass[] = [];
 
   constructor(
     public layers: BackgroundLayer[] = [],
@@ -94,8 +95,6 @@ export default class Engine {
     this.renderer.setSize(outputWidth, outputHeight);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setPixelRatio(1);
-    this.renderer.domElement.style.imageRendering = "crisp-edges";
-    // this.renderer.domElement.style.imageRendering = "pixelated";
     this.containerElement.appendChild(this.renderer.domElement);
 
     this.pixelData = new Uint8Array(SNES_WIDTH * SNES_HEIGHT * 4);
@@ -105,13 +104,13 @@ export default class Engine {
       SNES_HEIGHT,
       THREE.RGBAFormat,
     );
-    // this.pixelTexture.minFilter = THREE.LinearFilter;
-    // this.pixelTexture.magFilter = THREE.LinearFilter;
+
     this.pixelTexture.minFilter = THREE.NearestFilter;
     this.pixelTexture.magFilter = THREE.NearestFilter;
     this.pixelTexture.colorSpace = THREE.SRGBColorSpace;
     this.pixelTexture.generateMipmaps = false;
     this.pixelTexture.needsUpdate = true;
+    this.pixelTexture.flipY = true; // canvas order to texture order
 
     const planeGeometry = new THREE.PlaneGeometry(outputWidth, outputHeight);
     const planeMaterial = new THREE.MeshBasicMaterial({
@@ -150,54 +149,60 @@ export default class Engine {
     this.renderer.domElement.style.height = `${outputHeight * scaleFactor}px`;
   }
 
-  async loadShader(shaderType: ShaderType, userParams: Record<string, any> = {}) {
-    this.disableShader();
-
-    if (shaderType === "none") {
-      return;
-    }
+  async loadShader(
+    shaderType: ShaderType,
+    userParams: Record<string, any> = {},
+  ) {
+    await this.shaderLoading;
 
     try {
-      // will need to generalize to shaders with multiple passes
-      const fragmentShader = (
-        await import(`./shaders/${shaderType}/frag.glsl?raw`)
-      ).default;
-      const vertexShader = (
-        await import(`./shaders/${shaderType}/vert.glsl?raw`)
-      ).default;
-      const uniformValues = (
-        await import(`./shaders/${shaderType}/uniforms.js`)
-      )?.default ?? {}; // possibly no uniforms
+      const preset = (await import(`./${SHADER_DIR}/${shaderType}/preset.ts`))
+        .default as ShaderPreset;
 
-      const customShader = {
-        vertexShader,
-        fragmentShader,
-        uniforms: {
-          ...objToUniforms(uniformValues),
-          ...objToUniforms(userParams), // overrides default uniform values
+      const filter = preset.filterLinear
+        ? THREE.LinearFilter
+        : THREE.NearestFilter;
+      this.pixelTexture.minFilter = filter;
+      this.pixelTexture.magFilter = filter;
 
-          tDiffuse: { value: this.pixelTexture },
-          resolution: {
-            value: new THREE.Vector2(
-              SNES_WIDTH * this.renderScale,
-              SNES_HEIGHT * this.renderScale,
-            ),
-          },
-          sourceResolution: {
-            value: new THREE.Vector2(SNES_WIDTH, SNES_HEIGHT),
-          },
-          pixelSize: { value: this.renderScale },
-        },
-      };
+      this.renderer.domElement.style.imageRendering =
+        preset.imageRendering ?? "auto";
 
-      // Create shader pass and add to composer
-      this.shaderPass = new ShaderPass(customShader);
-      this.shaderPass.renderToScreen = true;
-      this.composer.addPass(this.shaderPass);
+      await Promise.all(
+        preset.passes.map(async (passName) => {
+          const vertexShader = (
+            await import(`./${SHADER_DIR}/${shaderType}/${passName}.vert?raw`)
+          ).default;
+          const fragmentShader = (
+            await import(`./${SHADER_DIR}/${shaderType}/${passName}.frag?raw`)
+          ).default;
 
-      this.currentShader = shaderType;
-      this.shaderLoaded = true;
+          const pass = new ShaderPass({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              pixelSize: { value: this.renderScale },
+              ...objToUniforms(preset.uniforms ?? {}),
+              ...objToUniforms(userParams), // overrides default uniform values
 
+              tDiffuse: { value: this.pixelTexture },
+              resolution: {
+                value: new THREE.Vector2(
+                  SNES_WIDTH * this.renderScale,
+                  SNES_HEIGHT * this.renderScale,
+                ),
+              },
+              sourceResolution: {
+                value: new THREE.Vector2(SNES_WIDTH, SNES_HEIGHT),
+              },
+            },
+          });
+
+          this.shaderPasses.push(pass);
+          pass.renderToScreen = true;
+          this.composer.addPass(pass);
+        }),
+      );
       console.log(`Loaded shader: ${shaderType}`);
     } catch (error) {
       console.error(`Failed to load shader: ${shaderType}`, error);
@@ -205,15 +210,9 @@ export default class Engine {
   }
 
   private disableShader() {
-    if (this.currentShader === "none") return;
-
     // Remove shader pass if exists
-    if (this.shaderPass) {
-      this.composer.removePass(this.shaderPass);
-      this.shaderPass = null;
-    }
-
-    this.currentShader = "none";
+    this.shaderPasses.map((pass) => this.composer.removePass(pass));
+    this.loadShader("none");
   }
 
   private renderFrame(buf: Uint8Array, tick: number) {
@@ -305,16 +304,6 @@ export default class Engine {
     };
   }
 
-  // Public methods for controlling the engine
-
-  public getCurrentShader(): ShaderType {
-    return this.currentShader;
-  }
-
-  public async setShader(shaderType: ShaderType) {
-    await this.loadShader(shaderType);
-  }
-
   public setPreRenderFrames(frames: number) {
     this.preRenderFrames = frames;
     if (frames > 0) {
@@ -340,18 +329,16 @@ export default class Engine {
     this.camera.bottom = -outputHeight / 2;
     this.camera.updateProjectionMatrix();
 
-    // Update mesh geometry
     this.scene.children.forEach((child) => {
       if (child instanceof THREE.Mesh) {
         child.geometry = new THREE.PlaneGeometry(outputWidth, outputHeight);
       }
     });
 
-    // Update shader uniforms if active
-    if (this.shaderPass) {
-      this.shaderPass.uniforms.resolution.value.set(outputWidth, outputHeight);
-      this.shaderPass.uniforms.pixelSize.value = this.renderScale;
-    }
+    this.shaderPasses.forEach((pass) => {
+      pass.uniforms.resolution.value.set(outputWidth, outputHeight);
+      pass.uniforms.pixelSize.value = this.renderScale;
+    });
 
     this.updateAspectRatio();
   }
@@ -361,7 +348,7 @@ export default class Engine {
   }
 }
 
-/** 
+/**
  * Takes an object and wraps its values v with { value: v } for use as a
  * uniforms object expected by three.js's ShaderPass.
  */

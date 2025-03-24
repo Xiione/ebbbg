@@ -17,6 +17,7 @@ export interface BackgroundConfig {
   aspectRatio: AspectRatio;
   frameSkip: number;
 }
+
 export type ShaderType =
   | "crt-aperture"
   | "crt-blurpi"
@@ -47,3 +48,14 @@ export type ShaderType =
   | "yeetron"
   | "zfast-crt"
   | "none";
+
+/**
+ * Adaptation of .glslp preset files from libretro.
+ * Passes' frag and vert shader file names must match.
+ */
+export interface ShaderPreset {
+  passes: string[];
+  filterLinear: boolean;
+  imageRendering?: "auto" | "crisp-edges" | "pixelated"
+  uniforms?: Record<string, any>;
+}

@@ -17,10 +17,16 @@
   let engine: Engine | null = $state(null);
 
   $effect(() => {
-    if (rom && engine) engine.layers[0] = new BackgroundLayer(rom, layer1);
+    if (rom && engine) {
+      console.log(`Loaded layer ${layer1}`)
+      engine.layers[0] = new BackgroundLayer(rom, layer1);
+    }
   });
   $effect(() => {
-    if (rom && engine) engine.layers[1] = new BackgroundLayer(rom, layer2);
+    if (rom && engine) {
+      console.log(`Loaded layer ${layer2}`)
+      engine.layers[1] = new BackgroundLayer(rom, layer2);
+    }
   });
 
   onMount(async () => {
@@ -39,7 +45,7 @@
         frameSkip,
         alpha: [alpha, alpha],
         containerElement: container,
-        initialShader: "crt-aperture",
+        initialShader: "none",
         renderScale: 8,
         preRenderFrames: 0,
       },

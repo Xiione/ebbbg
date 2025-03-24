@@ -10,11 +10,9 @@ const frameSkipDefault = 1;
 export const load: PageLoad = ({ url }) => {
   const params = url.searchParams;
 
-  const parseLayerParam = (param: string, defaultValue: number): number => {
+  const parseLayerParam = (param: string): number => {
     const value = parseInt(params.get(param) || "");
-    return !isNaN(value) && value >= 0 && value <= MAX_LAYER_INDEX
-      ? value
-      : defaultValue;
+    return !isNaN(value) && value >= 0 && value <= MAX_LAYER_INDEX ? value : 0;
   };
 
   const parseAspectRatio = (): AspectRatio => {
@@ -39,11 +37,18 @@ export const load: PageLoad = ({ url }) => {
       : frameSkipDefault;
   };
 
+  let layer1 = parseLayerParam("layer1");
+  let layer2 = parseLayerParam("layer2");
+  if (!layer1 && !layer2) {
+    layer1 = layer1Default;
+    layer2 = layer2Default;
+  }
+
   const config: BackgroundConfig = {
     // layer1: parseLayerParam("layer1", layer1Default),
     // layer2: parseLayerParam("layer2", layer2Default),
-    layer1: parseLayerParam("layer1", Math.floor(Math.random() * (MAX_LAYER_INDEX+1))),
-    layer2: parseLayerParam("layer2", Math.floor(Math.random() * (MAX_LAYER_INDEX+1))),
+    layer1,
+    layer2,
     aspectRatio: parseAspectRatio(),
     frameSkip: parseFrameSkip(),
   };
