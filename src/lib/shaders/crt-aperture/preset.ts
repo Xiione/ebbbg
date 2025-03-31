@@ -36,6 +36,6 @@ export default {
     SCANLINE_OFFSET: 1.0, // [0.0, 1.0]
     GAMMA_INPUT: 2.4, // [1.0, 5.0]
     GAMMA_OUTPUT: 5, // [1.0, 5.0]
-    BRIGHTNESS: 1.5, // [0.0, 2.0]
+    BRIGHTNESS: 8.5, // [0.0, 2.0]
   },
 } satisfies ShaderPreset;

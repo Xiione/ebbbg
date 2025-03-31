@@ -4,6 +4,8 @@ import type { PageLoad } from "./$types";
 
 const layer1Default = 219;
 const layer2Default = 218;
+// const layer1Default = Math.floor(Math.random() * MAX_LAYER_INDEX);
+// const layer2Default = Math.floor(Math.random() * MAX_LAYER_INDEX);
 const aspectRatioDefault = AspectRatio.FULL;
 const frameSkipDefault = 1;
 

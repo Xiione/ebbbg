@@ -45,7 +45,7 @@
         frameSkip,
         alpha: [alpha, alpha],
         containerElement: container,
-        initialShader: "none",
+        initialShader: "crt-aperture",
         renderScale: 8,
         preRenderFrames: 0,
       },

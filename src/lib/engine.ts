@@ -65,13 +65,13 @@ export default class Engine {
     this.preRenderFrames = opts.preRenderFrames;
 
     // Initialize Three.js
-    this.initThreeJS();
+    this.initThree();
 
     // Load initial shader if specified
     this.loadShader(opts.initialShader);
   }
 
-  private initThreeJS() {
+  private initThree() {
     const outputWidth = SNES_WIDTH * this.renderScale;
     const outputHeight = SNES_HEIGHT * this.renderScale;
 
@@ -169,7 +169,7 @@ export default class Engine {
         preset.imageRendering ?? "auto";
 
       await Promise.all(
-        preset.passes.map(async (passName) => {
+        preset.passes.map(async (passName, passNum) => {
           const vertexShader = (
             await import(`./${SHADER_DIR}/${shaderType}/${passName}.vert?raw`)
           ).default;
@@ -177,24 +177,29 @@ export default class Engine {
             await import(`./${SHADER_DIR}/${shaderType}/${passName}.frag?raw`)
           ).default;
 
+          const OutputSize = {
+            value: new THREE.Vector2(
+              SNES_WIDTH * this.renderScale,
+              SNES_HEIGHT * this.renderScale,
+            ),
+          };
+
           const pass = new ShaderPass({
             vertexShader,
             fragmentShader,
             uniforms: {
-              pixelSize: { value: this.renderScale },
+              PixelSize: { value: this.renderScale },
               ...objToUniforms(preset.uniforms ?? {}),
               ...objToUniforms(userParams), // overrides default uniform values
 
               tDiffuse: { value: this.pixelTexture },
-              resolution: {
-                value: new THREE.Vector2(
-                  SNES_WIDTH * this.renderScale,
-                  SNES_HEIGHT * this.renderScale,
-                ),
-              },
-              sourceResolution: {
-                value: new THREE.Vector2(SNES_WIDTH, SNES_HEIGHT),
-              },
+              InputSize:
+                passNum > 0
+                  ? OutputSize // only first pass does upscaling
+                  : {
+                      value: new THREE.Vector2(SNES_WIDTH, SNES_HEIGHT),
+                    },
+              OutputSize,
             },
           });
 

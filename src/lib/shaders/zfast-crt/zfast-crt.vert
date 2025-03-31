@@ -11,13 +11,12 @@
 varying vec2 vUv;
 varying float maskFade;
 varying vec2 invDims;
-uniform vec2 sourceResolution;
-uniform vec2 resolution;
+uniform vec2 InputSize;
 uniform float MASK_FADE;
 
 void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     vUv = uv;
     maskFade = 0.3333 * MASK_FADE;
-    invDims = 1.0 / sourceResolution;
+    invDims = 1.0 / InputSize;
 }

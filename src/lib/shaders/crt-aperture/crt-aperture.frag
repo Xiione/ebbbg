@@ -3,9 +3,9 @@
     License: GPL
 */
 #define Coord vUv
-#define OutputSize resolution
-#define TextureSize sourceResolution
-#define InputSize sourceResolution
+// #define OutputSize resolution
+// #define InputSize sourceResolution
+#define TextureSize InputSize
 #define Texture tDiffuse
 
 #define IN varying
@@ -24,11 +24,11 @@ precision mediump float;
 #endif
 
 uniform PRECISION vec2 OutputSize;
-uniform PRECISION vec2 TextureSize;
-// uniform PRECISION vec2 InputSize;
+// uniform PRECISION vec2 TextureSize;
+uniform PRECISION vec2 InputSize;
 uniform sampler2D Texture;
 IN vec2 Coord;
-uniform PRECISION float pixelSize;
+uniform PRECISION float PixelSize;
 
 uniform PRECISION float SHARPNESS_IMAGE;
 uniform PRECISION float SHARPNESS_EDGES;
@@ -123,10 +123,9 @@ vec3 get_mask_weight(float x)
 
 void main()
 {
-    float scale = pixelSize;
-    float offset = 1.0 / scale * 0.5;
+    float offset = 1.0 / PixelSize * 0.5;
 
-    if (bool(mod(scale, 2.0))) offset = 0.0;
+    if (bool(mod(PixelSize, 2.0))) offset = 0.0;
 
     vec2 co = (Coord * TextureSize - vec2(0.0, offset * SCANLINE_OFFSET)) / TextureSize;
 

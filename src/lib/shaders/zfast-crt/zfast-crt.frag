@@ -9,9 +9,9 @@
     any later version.
 */
 uniform sampler2D tDiffuse;
-uniform vec2 resolution;
-uniform vec2 sourceResolution;
-uniform float pixelSize;
+uniform vec2 OutputSize;
+uniform vec2 InputSize;
+uniform float PixelSize;
 
 uniform float BLURSCALEX;
 uniform float LOWLUMSCAN;
@@ -26,15 +26,9 @@ varying vec2 invDims;
 
 #define FINEMASK
 
-// vTexCoord -> vUv
-// SourceSize -> sourceResolution
-// OutputSize -> resolution
-// TextureSize -> sourceResolution
-// ratio = pixelSize
-
 void main() {
 	//This is just like "Quilez Scaling" but sharper
-    vec2 p = vUv * sourceResolution;
+    vec2 p = vUv * InputSize;
     vec2 i = floor(p) + 0.50;
     vec2 f = p - i;
     p = (i + 4.0 * f * f * f) * invDims;
@@ -46,10 +40,10 @@ void main() {
     float YY = Y * Y;
 
     #if defined(FINEMASK)
-    float whichmask = floor(vUv.x * resolution.x) * -0.5;
+    float whichmask = floor(vUv.x * OutputSize.x) * -0.5;
     float mask = 1.0 + float(fract(whichmask) < 0.5) * -MASK_DARK;
     #else
-    float whichmask = floor(vUv.x * resolution.x) * -0.3333;
+    float whichmask = floor(vUv.x * OutputSize.x) * -0.3333;
     float mask = 1.0 + float(fract(whichmask) < 0.3333) * -MASK_DARK;
     #endif
 
